@@ -1,14 +1,27 @@
 extends ../layout
-
+include ../mixins/pagination
 block content
   div
     h1 당신이 기록한 감정들
     h2 그날에는 어떤 감정을 가졌는지 확인해보세요
   table
-    tbody 
-      each note in notes 
-        tr 
-          td: a(href=`/notes/${note.shortId}`)= note.title
-          td= note.author 
+    thead
+      tr
+        td 페이지 당 게시글 수
+        td(colspan="2")
+          select(onChange="window.location.href=this.value")
+            option(value="/notes?perPage=10" selected= perPage == 10) 10
+            option(value="/notes?perPage=20" selected= perPage == 20) 20
+            option(value="/notes?perPage=50" selected= perPage == 50) 50
+            option(value="/notes?perPage=100" selected= perPage == 100) 100
+    tbody
+      each note in notes
+        tr
+          td: a(href="/notes/"+note.shortId)= note.title
+          td= note.author
           td= formatDate(note.createdAt)
+    tfoot 
+      tr 
+        td(colspan="3")
+          +pagination("/notes")
   a(href="/notes?write=true"): button 감정 기록하기

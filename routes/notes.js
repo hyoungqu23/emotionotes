@@ -10,9 +10,22 @@ router.get("/", async (req, res, next) => {
     return;
   }
 
-  const notes = await Note.find({});
+  const page = +(req.query.page || 1);
+  const perPage = +(req.query.perPage || 10);
 
-  res.render("note/list", { notes });
+  const [total, notes] = await Promise.all([
+    Note.countDocuments({}),
+    Note.find({})
+      .sort({ createdAt: -1 })
+      .skip(perPage * (page - 1))
+      .limit(perPage),
+  ]);
+
+  const totalPage = Math.ceil(total / perPage);
+
+  // const notes = await Note.find({});
+
+  res.render("note/list", { notes, page, perPage, totalPage });
 });
 
 // READ 게시글 조회하기: GET 요청
