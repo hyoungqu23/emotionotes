@@ -1,0 +1,14 @@
+extends ../layout
+
+block content
+  div
+    h1 당신이 기록한 감정들
+    h2 그날에는 어떤 감정을 가졌는지 확인해보세요
+  table
+    tbody 
+      each note in notes 
+        tr 
+          td: a(href=`/notes/${note.shortId}`)= note.title
+          td= note.author 
+          td= formatDate(note.createdAt)
+  a(href="/notes?write=true"): button 감정 기록하기

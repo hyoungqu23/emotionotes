@@ -1,0 +1,31 @@
+extends ../layout
+
+block content
+  h1= note.title
+  table
+    tbody
+      tr
+        th= note.author
+        th(colspan="2")= formatDate(note.createdAt)
+      tr
+        td(colspan="3")
+          pre= note.content
+      tr
+        td: a(href="/notes"): button 다른 감정 보러가기
+        td: a(href="?write=true"): button 감정 바꾸기
+        td: button.delete(onclick='deletePost()') 감정 지우기
+  script(type="text/javascript").
+    function deletePost() {
+      fetch(`/notes/${note.shortId}`, { method: 'delete' })
+        .then((res) => {
+          if (res.ok) {
+            alert('삭제되었습니다.');
+            window.location.href = '/notes';
+          } else {
+            alert('오류가 발생했습니다.');
+          }
+        })
+        .catch((err) => {
+          alert('오류가 발생했습니다.');
+        });
+    }

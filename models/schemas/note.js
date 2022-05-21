@@ -14,7 +14,7 @@ module.exports = new Schema(
     },
     author: {
       type: String,
-      required: true,
+      // required: true,
     },
   },
   {
