@@ -1,0 +1,13 @@
+extends ../layout
+
+block content
+  h1= note ? "다른 감정을 느꼈나요?" : "오늘은 어떤 감정을 느끼셨나요?"
+  h2= note ? "어떤 감정이었나요?" : "당신이 오늘 느낀 감정을 써내려가보세요."
+  form(action=note ? "/notes/"+note.shortId : "/notes" , method="post")
+    div
+      label 오늘의 감정
+      input(type="text" name="title" value=note && note.title)
+    div
+      label 오늘 하루는 어땠나요?
+      textarea(name="content")= note && note.content
+    div: input(type="submit", value=note ? "감정 바꾸기" : "감정 기록하기")
