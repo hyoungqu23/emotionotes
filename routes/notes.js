@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { Note } = require("../models/index");
+const { User, Note } = require("../models/index");
 
 const router = Router();
 
@@ -13,25 +13,17 @@ router.get("/", async (req, res, next) => {
   const page = +(req.query.page || 1);
   const perPage = +(req.query.perPage || 10);
 
-  const [total, notes] = await Promise.all([
-    Note.countDocuments({}),
-    Note.find({})
-      .sort({ createdAt: -1 })
-      .skip(perPage * (page - 1))
-      .limit(perPage),
-  ]);
-
-  const totalPage = Math.ceil(total / perPage);
+  const [totalPage, notes] = await Note.getPaginatedNotes({}, page, perPage);
 
   // const notes = await Note.find({});
 
-  res.render("note/list", { notes, page, perPage, totalPage });
+  res.render("note/list", { notes, page, perPage, totalPage, path: req.baseUrl });
 });
 
 // READ 게시글 조회하기: GET 요청
 router.get("/:shortId", async (req, res, next) => {
   const { shortId } = req.params;
-  const note = await Note.findOne({ shortId });
+  const note = await Note.findOne({ shortId }).populate("author");
 
   if (req.query.write) {
     res.render("note/write", { note });
@@ -48,9 +40,18 @@ router.post("/", async (req, res, next) => {
       throw new Error("감정과 설명을 작성해 주세요.");
     }
 
+    const author = await User.findOne({
+      shortId: req.user.shortId,
+    });
+
+    if (!author) {
+      throw new Error("작성자 정보가 없습니다.");
+    }
+
     const note = await Note.create({
       title,
       content,
+      author,
     });
     res.redirect(`/notes/${note.shortId}`);
   } catch (error) {
@@ -68,6 +69,11 @@ router.post("/:shortId", async (req, res, next) => {
       throw new Error("감정과 설명을 작성해 주세요.");
     }
 
+    const note = await Note.findOne({ shortId }).populate("author");
+    if (note.author.shortId !== req.user.shortId) {
+      throw new Error("작성자가 아니면 수정할 수 없습니다.");
+    }
+
     await Note.updateOne(
       { shortId },
       {
@@ -83,6 +89,12 @@ router.post("/:shortId", async (req, res, next) => {
 
 router.delete("/:shortId", async (req, res, next) => {
   const { shortId } = req.params;
+
+  const note = await Note.findOne({ shortId }).populate("author");
+  if (note.author.shortId !== req.user.shortId) {
+    throw new Error("작성자가 아니면 삭제할 수 없습니다.");
+  }
+
   await Note.deleteOne({ shortId });
   res.send("OK");
 });

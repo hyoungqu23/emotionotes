@@ -36,7 +36,7 @@ app.use(getUserFromJWT);
 
 app.use("/", indexRouter);
 app.use("/notes", loginRequired, noteRouter);
-app.use("/user", loginRequired, userRouter);
+app.use("/users", loginRequired, userRouter);
 app.use("/auth", authRouter);
 
 // catch 404 and forward to error handler
